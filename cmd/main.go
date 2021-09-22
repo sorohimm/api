@@ -7,11 +7,20 @@ import (
 )
 
 func main() {
-	router := SetupRouter()
-	log.Fatal(router.Run(":8080"))
+	//router := SetupRouter()
+	router := gin.Default()
+
+	router.GET("/book/:id", controllers.GetBook)
+	router.POST("/book", controllers.CreateNewBook)
+	router.GET("/books", controllers.GetAllBooks)
+	router.DELETE("/book", controllers.DeleteBook)
+	router.DELETE("/book/:id", controllers.DeleteBook)
+	router.GET("/check", controllers.HealthCheck)
+
+	log.Fatal(router.Run())
 }
 
-func SetupRouter() *gin.Engine {
+/*func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 
@@ -25,4 +34,4 @@ func SetupRouter() *gin.Engine {
 		v1.GET("/check", controllers.HealthCheck)
 	}
 	return router
-}
+}*/

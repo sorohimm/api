@@ -1,44 +1,3 @@
-//package db
-//
-//import (
-//	"api/internal/config"
-//	"context"
-//	"fmt"
-//	"github.com/jackc/pgx/v4"
-//	"github.com/pkg/errors"
-//
-//	"api/internal/interfaces"
-//	"github.com/jackc/pgx/v4/pgxpool"
-//)
-//
-//type DatabaseClient struct {
-//	Pool *pgxpool.Pool
-//	Ctx  context.Context
-//}
-//
-//func Init(ctx context.Context) (interfaces.DBHandler, error) {
-//	pool, err := pgxpool.Connect(context.Background(), "postgres://postgres:123@postgres:5432/test")
-//
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return &DatabaseClient{Pool: pool}, err
-//}
-//
-//func (p *DatabaseClient) GetPool() *pgxpool.Pool {
-//	return p.Pool
-//}
-//
-//func (p *DatabaseClient) AcquireConn(ctx context.Context) (*pgxpool.Conn, error) {
-//	return p.Pool.Acquire(ctx)
-//}
-//
-//func (p *DatabaseClient) GetCtx() context.Context {
-//	return p.Ctx
-//}
-
-
 package db
 
 import (
@@ -56,12 +15,10 @@ type PostgresClient struct {
 }
 
 func InitDBClient(cfg *config.Config, ctx context.Context) (interfaces.DBHandler, error) {
-	//"postgres://postgres:123@postgres:5432/test"
-	//"postgres://%s:%s@%s:%s/%s?sslmode=disable"
 	Pool, err := pgxpool.Connect(ctx, fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		cfg.DBUsername, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBDatabase))
+		cfg.DBUsername, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName))
 	if err != nil {
-		return nil, errors.Wrap(err, "postgres init")
+		return nil, errors.Wrap(err, "postgres init err")
 	}
 	return &PostgresClient{Pool: Pool}, nil
 }
@@ -69,10 +26,6 @@ func InitDBClient(cfg *config.Config, ctx context.Context) (interfaces.DBHandler
 func (p *PostgresClient) GetPool() *pgxpool.Pool {
 	return p.Pool
 }
-
-//func (p *PostgresClient) AcquireConn(ctx context.Context) (*pgxpool.Conn, error) {
-//	return p.Pool.Acquire(ctx)
-//}
 
 func (p *PostgresClient) StartTransaction(ctx context.Context) (pgx.Tx, error) {
 	tx, err := p.Pool.Begin(ctx)

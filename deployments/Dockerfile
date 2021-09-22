@@ -1,15 +1,13 @@
-FROM golang:latest as builder
+FROM golang:1.17.1-alpine3.14 as builder
 
-WORKDIR /User/sorohimm/GoProjects/api/cmd
+WORKDIR /api/cmd
 
-COPY . /User/sorohimm/GoProjects/api
+COPY . /api
 
 RUN go build -o main .
 
-FROM ubuntu:latest
+FROM alpine:latest
 
-COPY --from=builder /User/sorohimm/GoProjects/api/cmd/main /User/sorohimm/GoProjects/api/cmd/main
+COPY --from=builder api/cmd/main /api/cmd/main
 
-ENTRYPOINT ["/User/sorohimm/GoProjects/api/cmd"]
-
-
+ENTRYPOINT ["api/cmd/main"]
