@@ -1,37 +1,56 @@
 package main
 
 import (
+	"api/internal/config"
 	"api/internal/controllers"
+	"api/internal/infrastructure"
+	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
+	"go.uber.org/zap"
+	"os"
 )
 
-func main() {
-	//router := SetupRouter()
-	router := gin.Default()
+var (
+	cfg *config.Config
+	ctx context.Context
+	log *zap.SugaredLogger
+)
 
-	router.GET("/book/:id", controllers.GetBook)
-	router.POST("/book", controllers.CreateNewBook)
-	router.GET("/books", controllers.GetAllBooks)
-	router.DELETE("/book", controllers.DeleteBook)
-	router.DELETE("/book/:id", controllers.DeleteBook)
-	router.GET("/check", controllers.HealthCheck)
+func init() {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		fmt.Printf("error loading logger: %s", err)
+		os.Exit(1)
+		return
+	}
 
-	log.Fatal(router.Run())
+	log = logger.Sugar()
+
+	cfg, err = config.New()
+	if err != nil {
+		log.Fatalf("config init error: %s", err)
+	}
+	log.Infof("Config loaded:\n%+v", cfg)
+
+	ctx = context.Background()
 }
 
-/*func SetupRouter() *gin.Engine {
+func main() {
+	injector, _ := infrastructure.Injector(log, ctx, cfg)
+	bookController := injector.InjectBookController()
 
 	router := gin.Default()
 
-	v1 := router.Group("/api/v1")
+	v1 := router.Group("/books/v1")
 	{
-		v1.GET("/book/:id", controllers.GetBook)
-		v1.POST("/book", controllers.CreateNewBook)
-		v1.GET("/books", controllers.GetAllBooks)
-		v1.DELETE("/book", controllers.DeleteBook)
+		v1.GET("/book/:id", bookController.GetBook)
+		v1.POST("/book", bookController.CreateBook)
+		// TODO: put request
+		v1.GET("/books", bookController.GetAllBooks)
 		v1.DELETE("/book/:id", controllers.DeleteBook)
 		v1.GET("/check", controllers.HealthCheck)
 	}
-	return router
-}*/
+
+	log.Fatal(router.Run())
+}

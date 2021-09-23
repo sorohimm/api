@@ -11,7 +11,7 @@ type Config struct {
 type DBAuthenticationData struct {
 	DBUsername string
 	DBPassword string
-	DBName string
+	DBName     string
 	DBHost     string
 	DBPort     string
 }
@@ -24,7 +24,7 @@ func New() (*Config, error) {
 			DBPassword: os.Getenv("DB_PASSWORD"),
 			DBHost:     os.Getenv("DB_HOST"),
 			DBPort:     os.Getenv("DB_PORT"),
-			DBName: os.Getenv("DB_NAME"),
+			DBName:     os.Getenv("DB_NAME"),
 		},
 	}, nil
 }
