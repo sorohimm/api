@@ -25,18 +25,17 @@ func (r *DBBookRepo) InsertBook(
 func (r *DBBookRepo) GetBook(
 	ctx context.Context, conn *pgxpool.Conn, id string) (book models.Book, err error) {
 	const GetBookStatement = `SELECT (id, name, year, author, category, price, descriptions) FROM books WHERE id = $1;`
-	rows, err := conn.Query(ctx, GetBookStatement, id)
+	err = conn.QueryRow(ctx, GetBookStatement, id).Scan(&book.ID, &book.Name, &book.Year, &book.Author, &book.Category, &book.Price, &book.Descriptions)
 	if err != nil {
 		return models.Book{}, err
 	}
-	err = rows.Scan(&book.ID, &book.Name, &book.Year, &book.Author, &book.Category, &book.Price, &book.Descriptions)
 
 	return book, err
 }
 
-func (r *DBBookRepo) GetAllBooks(
-	ctx context.Context, conn *pgxpool.Conn) ([]models.Book, error) {
-	const GetBooksStatement = `SELECT (id, name, year, author, category, price, descriptions) FROM books WHERE id = $1;`
+func (r *DBBookRepo) GetAllBooks(ctx context.Context, conn *pgxpool.Conn) ([]models.Book, error) {
+	//(id, name, year, author, category, price, descriptions)
+	const GetBooksStatement = `SELECT * FROM books;`
 	rows, err := conn.Query(ctx, GetBooksStatement)
 	if err != nil {
 		return nil, err
@@ -59,8 +58,8 @@ func (r *DBBookRepo) GetAllBooks(
 }
 
 func (r *DBBookRepo) DeleteBook(ctx context.Context, conn *pgxpool.Conn, id string) (err error) {
-	const DeleteBookStatement = `DELETE FROM BOOK WHERE id= $1;`
-	_, err = conn.Exec(ctx, DeleteBookStatement)
+	const DeleteBookStatement = `DELETE FROM books WHERE id= $1;`
+	_, err = conn.Exec(ctx, DeleteBookStatement, id)
 	if err != nil {
 		return err
 	}

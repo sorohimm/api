@@ -48,7 +48,7 @@ func main() {
 		v1.POST("/book", bookController.CreateBook)
 		// TODO: put request
 		v1.GET("/books", bookController.GetAllBooks)
-		v1.DELETE("/book/:id", controllers.DeleteBook)
+		v1.DELETE("/book/:id", bookController.DeleteBook)
 		v1.GET("/check", controllers.HealthCheck)
 	}
 

@@ -1,6 +1,6 @@
 package db
 
-import (
+/*import (
 	"api/internal/config"
 	"api/internal/interfaces"
 	"context"
@@ -14,11 +14,11 @@ type PostgresClient struct {
 	Pool *pgxpool.Pool
 }
 
-func InitDBClient(cfg *config.Config, ctx context.Context) (interfaces.DBHandler, error) {
+func InitDBClient(cfg *config.Config, ctx context.Context) (interfaces.IDBHandler, error) {
 	Pool, err := pgxpool.Connect(ctx, fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.DBUsername, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName))
 	if err != nil {
-		return nil, errors.Wrap(err, "postgres init err")
+		return &PostgresClient{}, errors.Wrap(err, "postgres init err")
 	}
 	return &PostgresClient{Pool: Pool}, nil
 }
@@ -50,4 +50,4 @@ func (p *PostgresClient) FinishTransaction(ctx context.Context, tx pgx.Tx, err e
 
 		return nil
 	}
-}
+}*/
