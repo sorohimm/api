@@ -1,61 +1,64 @@
 package services
 
 import (
-	_"api/internal/config"
-	_"api/internal/db"
 	"api/internal/interfaces"
 	"api/internal/models"
 	"context"
-	_"github.com/gin-gonic/gin"
 )
 
 type BookService struct {
-	DBHandler interfaces.IDBHandler
+	DBHandler  interfaces.IDBHandler
 	DBBookRepo interfaces.IDBBookRepo
 }
 
-func (s *BookService) CreateBook(book models.Book) (string, error) {
+func (s *BookService) CreateBook(book models.Book) (models.BookResponse, error) {
 	ctx := context.Background()
 	conn, err := s.DBHandler.AcquireConn(ctx)
 	if err != nil {
-		return "", err
+		return models.BookResponse{}, err
 	}
+	defer conn.Release()
 
-	id, err := s.DBBookRepo.InsertBook(ctx, conn, book)
+	result, err := s.DBBookRepo.InsertBook(ctx, conn, book)
 	if err != nil {
-		return "", err
+		return models.BookResponse{}, err
 	}
 
-	return id, nil
+	return result, nil
 }
 
-func (s *BookService) GetBook(id string) (models.Book, error) {
+func (s *BookService) GetBook(id string) (models.BookResponse, error) {
 	ctx := context.Background()
+
 	conn, err := s.DBHandler.AcquireConn(ctx)
 	if err != nil {
-		return models.Book{}, err
+		return models.BookResponse{}, err
 	}
-	var result models.Book
+	defer conn.Release()
 
-	result, err = s.DBBookRepo.GetBook(ctx, conn, id)
+	var result models.BookResponse
+
+	result, err = s.DBBookRepo.PullBook(ctx, conn, id)
 	if err != nil {
-		return models.Book{}, err
+		return models.BookResponse{}, err
 	}
 
 	return result, nil
 
 }
 
-func (s *BookService) GetAllBooks() ([]models.Book, error) {
+func (s *BookService) GetAllBooks() ([]models.BookResponse, error) {
 	ctx := context.Background()
 	conn, err := s.DBHandler.AcquireConn(ctx)
-	if err != nil  {
+	if err != nil {
 		return nil, err
 	}
 
-	var books []models.Book
+	defer conn.Release()
 
-	books, err = s.DBBookRepo.GetAllBooks(ctx, conn)
+	var books []models.BookResponse
+
+	books, err = s.DBBookRepo.PullAllBooks(ctx, conn)
 	if err != nil {
 		return nil, err
 	}
@@ -63,15 +66,16 @@ func (s *BookService) GetAllBooks() ([]models.Book, error) {
 	return books, nil
 }
 
-func (s *BookService) DeleteBook(id string) (error) {
+func (s *BookService) DeleteBook(id string) error {
 	ctx := context.Background()
 	conn, err := s.DBHandler.AcquireConn(ctx)
-	if err != nil  {
+	if err != nil {
 		return err
 	}
+	defer conn.Release()
 
 	err = s.DBBookRepo.DeleteBook(ctx, conn, id)
-	if err != nil  {
+	if err != nil {
 		return err
 	}
 
