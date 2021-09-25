@@ -7,6 +7,7 @@ import (
 	"api/internal/repos"
 	"api/internal/services"
 	"context"
+
 	"go.uber.org/zap"
 )
 
@@ -23,9 +24,9 @@ type environment struct {
 
 func (e *environment) InjectBookController() controllers.BookControllers {
 	return controllers.BookControllers{
-		Log:         e.logger,
+		Log: e.logger,
 		BookService: &services.BookService{
-			DBHandler: e.dbClient,
+			DBHandler:  e.dbClient,
 			DBBookRepo: &repos.DBBookRepo{},
 		},
 	}
