@@ -45,9 +45,9 @@ func main() {
 	v1 := router.Group("/books/v1")
 	{
 		v1.GET("/book/:id", bookController.GetBook)
-		v1.POST("/book", bookController.CreateBook)
-		// TODO: put request
 		v1.GET("/books", bookController.GetAllBooks)
+		v1.POST("/book", bookController.CreateBook)
+		// TODO: PUT
 		v1.DELETE("/book/:id", bookController.DeleteBook)
 		v1.GET("/check", controllers.HealthCheck)
 	}
