@@ -7,8 +7,8 @@ import (
 )
 
 type IDBBookRepo interface {
-	InsertBook(context.Context, *pgxpool.Conn, models.Book) (string, error)
-	GetBook(context.Context, *pgxpool.Conn, string) (models.Book, error)
-	GetAllBooks(context.Context, *pgxpool.Conn) ([]models.Book, error)
+	InsertBook(context.Context, *pgxpool.Conn, models.Book) (models.BookResponse, error)
+	PullBook(context.Context, *pgxpool.Conn, string) (models.BookResponse, error)
+	PullAllBooks(context.Context, *pgxpool.Conn) ([]models.BookResponse, error)
 	DeleteBook(context.Context, *pgxpool.Conn, string) error
 }
