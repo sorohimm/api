@@ -1,7 +1,7 @@
 package models
 
 type Book struct {
-	Uuid         string `json:"name"         validate:"required"`
+	Name         string `json:"name"         validate:"required"`
 	Year         string `json:"year"         validate:"required"`
 	Author       string `json:"author"       validate:"required"`
 	Category     string `json:"category"     validate:"required"`

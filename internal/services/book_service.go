@@ -81,3 +81,42 @@ func (s *BookService) DeleteBook(id string) error {
 
 	return nil
 }
+
+func (s *BookService) UpdateBook(book models.Book, uuid string) (models.BookResponse, error) {
+	ctx := context.Background()
+	conn, err := s.DBHandler.AcquireConn(ctx)
+	if err != nil {
+		return models.BookResponse{}, err
+	}
+	defer conn.Release()
+
+	respBook, err := s.GetBook(uuid)
+	if err != nil {
+		return models.BookResponse{}, err
+	}
+
+	var bookCpy = book
+
+	if bookCpy.Name == "" {
+		bookCpy.Name = respBook.Name
+	}
+	if bookCpy.Year == "" {
+		bookCpy.Year = respBook.Year
+	}
+	if bookCpy.Author == "" {
+		bookCpy.Author = respBook.Author
+	}
+	if bookCpy.Price == "" {
+		bookCpy.Price = respBook.Price
+	}
+	if bookCpy.Descriptions == "" {
+		bookCpy.Descriptions = respBook.Descriptions
+	}
+
+	result, err := s.DBBookRepo.UpdateBook(ctx, conn, bookCpy, uuid)
+	if err != nil {
+		return models.BookResponse{}, err
+	}
+
+	return result, nil
+}

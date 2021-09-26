@@ -9,4 +9,5 @@ type IBookService interface {
 	GetBook(string) (models.BookResponse, error)
 	GetAllBooks() ([]models.BookResponse, error)
 	DeleteBook(string) error
+	UpdateBook(models.Book, string) (models.BookResponse, error)
 }

@@ -18,7 +18,7 @@ func (r *DBBookRepo) InsertBook(
 	RETURNING "uuid";`
 
 	respBook := models.BookResponse{
-		Name:         reqBook.Uuid,
+		Name:         reqBook.Name,
 		Year:         reqBook.Year,
 		Author:       reqBook.Author,
 		Category:     reqBook.Category,
@@ -26,15 +26,20 @@ func (r *DBBookRepo) InsertBook(
 		Descriptions: reqBook.Descriptions,
 	}
 
-	err := conn.QueryRow(ctx, InsertBookStatement, reqBook.Uuid, reqBook.Year, reqBook.Author,
+	err := conn.QueryRow(ctx, InsertBookStatement, reqBook.Name, reqBook.Year, reqBook.Author,
 		reqBook.Category, reqBook.Price, reqBook.Descriptions).Scan(&respBook.Uuid)
+	if err != nil {
+		return models.BookResponse{}, err
+	}
 
 	return respBook, err
 }
 
 func (r *DBBookRepo) PullBook(
 	ctx context.Context, conn *pgxpool.Conn, uuid string) (book models.BookResponse, err error) {
-	const GetBookStatement = `SELECT * FROM books WHERE uuid =$1;`
+	const GetBookStatement = `SELECT * 
+							  FROM books 
+							  WHERE uuid = $1;`
 	err = conn.QueryRow(ctx, GetBookStatement, uuid).Scan(&book.Uuid, &book.Name, &book.Year, &book.Author,
 		&book.Category, &book.Price, &book.Descriptions)
 	if err != nil {
@@ -45,7 +50,8 @@ func (r *DBBookRepo) PullBook(
 }
 
 func (r *DBBookRepo) PullAllBooks(ctx context.Context, conn *pgxpool.Conn) ([]models.BookResponse, error) {
-	const GetBooksStatement = `SELECT * FROM books;`
+	const GetBooksStatement = `SELECT * 
+							   FROM books;`
 	rows, err := conn.Query(ctx, GetBooksStatement)
 
 	if err != nil {
@@ -69,11 +75,37 @@ func (r *DBBookRepo) PullAllBooks(ctx context.Context, conn *pgxpool.Conn) ([]mo
 }
 
 func (r *DBBookRepo) DeleteBook(ctx context.Context, conn *pgxpool.Conn, uuid string) error {
-	const DeleteBookStatement = `DELETE FROM books WHERE uuid=$1;`
+	const DeleteBookStatement = `DELETE FROM books 
+								 WHERE uuid = $1;`
 	_, err := conn.Exec(ctx, DeleteBookStatement, uuid)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *DBBookRepo) UpdateBook(ctx context.Context, conn *pgxpool.Conn, reqBook models.Book, uuid string) (models.BookResponse, error) {
+
+
+	const UpdateBookStatement = `UPDATE books 
+								 SET name = $1, year = $2, author = $3,category = $4, price = $5, descriptions = $6 
+								 WHERE uuid = $7;`
+
+	respBook := models.BookResponse{
+		Name:         reqBook.Name,
+		Year:         reqBook.Year,
+		Author:       reqBook.Author,
+		Category:     reqBook.Category,
+		Price:        reqBook.Price,
+		Descriptions: reqBook.Descriptions,
+	}
+
+	_, err := conn.Exec(ctx, UpdateBookStatement, reqBook.Name, reqBook.Year, reqBook.Author,
+		reqBook.Category, reqBook.Price, reqBook.Descriptions, uuid)
+	if err != nil {
+		return models.BookResponse{}, err
+	}
+
+	return respBook, err
 }

@@ -20,15 +20,7 @@ type BookControllers struct {
 func (c *BookControllers) CreateBook(ctx *gin.Context) {
 	var book models.Book
 
-	validate := validator.New()
-	err := validate.Struct(&book)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"Validate": "invalid request"})
-		return
-	}
-
-	err = ctx.BindJSON(&book)
+	err := ctx.BindJSON(&book)
 	if err != nil {
 		c.Log.Warn(err.Error())
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -102,5 +94,48 @@ func (c *BookControllers) DeleteBook(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": fmt.Sprintf("Successfully deleted book: %s", id),
+	})
+}
+
+func (c *BookControllers) UpdateBook(ctx *gin.Context) {
+	id := ctx.Param("id")
+	_, err := uuid.Parse(id)
+
+	if err != nil {
+		c.Log.Error(err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Validate": err.Error()})
+		return
+	}
+
+	var book models.Book
+
+
+	err = ctx.BindJSON(&book)
+	if err != nil {
+		c.Log.Warn(err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"BindJson": "invalid json"})
+		return
+	}
+
+	validate := validator.New()
+	err = validate.Struct(&book)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Validate": "invalid request"})
+	}
+
+	result, err := c.BookService.UpdateBook(book, id)
+	if err != nil {
+		c.Log.Error(err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"UpdateBook": err.Error()})
+		return
+	}
+	result.Uuid = id
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Successfully update book: %s", id),
+		"upd": result,
 	})
 }

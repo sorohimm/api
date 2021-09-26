@@ -47,9 +47,9 @@ func main() {
 		v1.GET("/book/:id", bookController.GetBook)
 		v1.GET("/books", bookController.GetAllBooks)
 		v1.POST("/book", bookController.CreateBook)
-		// TODO: PUT
+		v1.PUT("/book/:id", bookController.UpdateBook)
 		v1.DELETE("/book/:id", bookController.DeleteBook)
-		v1.GET("/check", controllers.HealthCheck)
+		v1.GET("/check", controllers.Check)
 	}
 
 	log.Fatal(router.Run())
