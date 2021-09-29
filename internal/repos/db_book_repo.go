@@ -10,46 +10,37 @@ type DBBookRepo struct {
 }
 
 func (r *DBBookRepo) InsertBook(
-	ctx context.Context, conn *pgxpool.Conn, reqBook models.Book) (models.BookResponse, error) {
+	ctx context.Context, conn *pgxpool.Conn, book models.Book) (models.Book, error) {
 	const InsertBookStatement = `
 	INSERT INTO books
 	(name, year, author, category, price, descriptions)
 	VALUES($1, $2, $3, $4, $5, $6)
 	RETURNING "uuid";`
 
-	respBook := models.BookResponse{
-		Name:         reqBook.Name,
-		Year:         reqBook.Year,
-		Author:       reqBook.Author,
-		Category:     reqBook.Category,
-		Price:        reqBook.Price,
-		Descriptions: reqBook.Descriptions,
-	}
-
-	err := conn.QueryRow(ctx, InsertBookStatement, reqBook.Name, reqBook.Year, reqBook.Author,
-		reqBook.Category, reqBook.Price, reqBook.Descriptions).Scan(&respBook.Uuid)
+	err := conn.QueryRow(ctx, InsertBookStatement, book.Name, book.Year, book.Author,
+		book.Category, book.Price, book.Descriptions).Scan(&book.Uuid)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 
-	return respBook, err
+	return book, err
 }
 
 func (r *DBBookRepo) PullBook(
-	ctx context.Context, conn *pgxpool.Conn, uuid string) (book models.BookResponse, err error) {
+	ctx context.Context, conn *pgxpool.Conn, uuid string) (book models.Book, err error) {
 	const GetBookStatement = `SELECT * 
 							  FROM books 
 							  WHERE uuid = $1;`
 	err = conn.QueryRow(ctx, GetBookStatement, uuid).Scan(&book.Uuid, &book.Name, &book.Year, &book.Author,
 		&book.Category, &book.Price, &book.Descriptions)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 
 	return book, err
 }
 
-func (r *DBBookRepo) PullAllBooks(ctx context.Context, conn *pgxpool.Conn) ([]models.BookResponse, error) {
+func (r *DBBookRepo) PullAllBooks(ctx context.Context, conn *pgxpool.Conn) ([]models.Book, error) {
 	const GetBooksStatement = `SELECT * 
 							   FROM books;`
 	rows, err := conn.Query(ctx, GetBooksStatement)
@@ -58,10 +49,10 @@ func (r *DBBookRepo) PullAllBooks(ctx context.Context, conn *pgxpool.Conn) ([]mo
 		return nil, err
 	}
 
-	var books []models.BookResponse
+	var books []models.Book
 
 	for rows.Next() {
-		var book models.BookResponse
+		var book models.Book
 		err = rows.Scan(&book.Uuid, &book.Name, &book.Year, &book.Author, &book.Category, &book.Price, &book.Descriptions)
 		if err != nil {
 			return nil, err
@@ -85,27 +76,18 @@ func (r *DBBookRepo) DeleteBook(ctx context.Context, conn *pgxpool.Conn, uuid st
 	return nil
 }
 
-func (r *DBBookRepo) UpdateBook(ctx context.Context, conn *pgxpool.Conn, reqBook models.Book, uuid string) (models.BookResponse, error) {
-
-
+func (r *DBBookRepo) UpdateBook(ctx context.Context, conn *pgxpool.Conn, book models.Book, uuid string) (models.Book, error) {
 	const UpdateBookStatement = `UPDATE books 
 								 SET name = $1, year = $2, author = $3,category = $4, price = $5, descriptions = $6 
-								 WHERE uuid = $7;`
+								 WHERE uuid = $7
+								 RETURNING "uuid";`
 
-	respBook := models.BookResponse{
-		Name:         reqBook.Name,
-		Year:         reqBook.Year,
-		Author:       reqBook.Author,
-		Category:     reqBook.Category,
-		Price:        reqBook.Price,
-		Descriptions: reqBook.Descriptions,
-	}
 
-	_, err := conn.Exec(ctx, UpdateBookStatement, reqBook.Name, reqBook.Year, reqBook.Author,
-		reqBook.Category, reqBook.Price, reqBook.Descriptions, uuid)
+	err := conn.QueryRow(ctx, UpdateBookStatement, book.Name, book.Year, book.Author,
+		book.Category, book.Price, book.Descriptions, uuid).Scan(&book.Uuid)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 
-	return respBook, err
+	return book, err
 }

@@ -11,43 +11,43 @@ type BookService struct {
 	DBBookRepo interfaces.IDBBookRepo
 }
 
-func (s *BookService) CreateBook(book models.Book) (models.BookResponse, error) {
+func (s *BookService) CreateBook(book models.Book) (models.Book, error) {
 	ctx := context.Background()
 	conn, err := s.DBHandler.AcquireConn(ctx)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 	defer conn.Release()
 
 	result, err := s.DBBookRepo.InsertBook(ctx, conn, book)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 
 	return result, nil
 }
 
-func (s *BookService) GetBook(id string) (models.BookResponse, error) {
+func (s *BookService) GetBook(id string) (models.Book, error) {
 	ctx := context.Background()
 
 	conn, err := s.DBHandler.AcquireConn(ctx)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 	defer conn.Release()
 
-	var result models.BookResponse
+	var result models.Book
 
 	result, err = s.DBBookRepo.PullBook(ctx, conn, id)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 
 	return result, nil
 
 }
 
-func (s *BookService) GetAllBooks() ([]models.BookResponse, error) {
+func (s *BookService) GetAllBooks() ([]models.Book, error) {
 	ctx := context.Background()
 	conn, err := s.DBHandler.AcquireConn(ctx)
 	if err != nil {
@@ -56,7 +56,7 @@ func (s *BookService) GetAllBooks() ([]models.BookResponse, error) {
 
 	defer conn.Release()
 
-	var books []models.BookResponse
+	var books []models.Book
 
 	books, err = s.DBBookRepo.PullAllBooks(ctx, conn)
 	if err != nil {
@@ -82,41 +82,18 @@ func (s *BookService) DeleteBook(id string) error {
 	return nil
 }
 
-func (s *BookService) UpdateBook(book models.Book, uuid string) (models.BookResponse, error) {
+func (s *BookService) UpdateBook(book models.Book, uuid string) (models.Book, error) {
 	ctx := context.Background()
 	conn, err := s.DBHandler.AcquireConn(ctx)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 	defer conn.Release()
 
-	respBook, err := s.GetBook(uuid)
+	updResult, err := s.DBBookRepo.UpdateBook(ctx, conn, book, uuid)
 	if err != nil {
-		return models.BookResponse{}, err
+		return models.Book{}, err
 	}
 
-	var bookCpy = book
-
-	if bookCpy.Name == "" {
-		bookCpy.Name = respBook.Name
-	}
-	if bookCpy.Year == "" {
-		bookCpy.Year = respBook.Year
-	}
-	if bookCpy.Author == "" {
-		bookCpy.Author = respBook.Author
-	}
-	if bookCpy.Price == "" {
-		bookCpy.Price = respBook.Price
-	}
-	if bookCpy.Descriptions == "" {
-		bookCpy.Descriptions = respBook.Descriptions
-	}
-
-	result, err := s.DBBookRepo.UpdateBook(ctx, conn, bookCpy, uuid)
-	if err != nil {
-		return models.BookResponse{}, err
-	}
-
-	return result, nil
+	return updResult, nil
 }

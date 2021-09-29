@@ -5,9 +5,9 @@ import (
 )
 
 type IBookService interface {
-	CreateBook(models.Book) (models.BookResponse, error)
-	GetBook(string) (models.BookResponse, error)
-	GetAllBooks() ([]models.BookResponse, error)
+	CreateBook(models.Book) (models.Book, error)
+	GetBook(string) (models.Book, error)
+	GetAllBooks() ([]models.Book, error)
 	DeleteBook(string) error
-	UpdateBook(models.Book, string) (models.BookResponse, error)
+	UpdateBook(models.Book, string) (models.Book, error)
 }
