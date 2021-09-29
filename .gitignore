@@ -1,2 +1,3 @@
-#go vendor ignore
 /vendor
+.idea
+.Ds_Store
