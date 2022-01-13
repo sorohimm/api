@@ -1,2 +1,2 @@
-# A simple for the library
+# A simple API for the library
 
